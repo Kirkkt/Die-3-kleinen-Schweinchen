@@ -1,0 +1,6 @@
+<!-- README -->
+
+# How to run?
+1. `python -m SimpleHTTPServer 2534`
+2. navigate to <http://localhost:2534>
+
