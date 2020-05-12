@@ -1,3 +1,29 @@
 <html>
+  <style>
+    body {
+      font-family: monospace;
+      font-size: 16px;
+    }
+  </style>
+  <div>
+    <form name="buttons">
+      <button name="dayGame" type="button">day game</button>
+      <button name="nightGame" type="button">night game</button>
+    </form>
+    <form name="withColorForm">
+      <input type="radio" name="withColorRadio"  value="with color" />
+      <label for="with color">with color</label>
+      <input type="radio" name="withColorRadio"  value="without color" />
+      <label for="without color">without color</label>
+    </form>
+    <form name="outputToDocumentForm">
+      <input type="radio" name="outputToDocumentRadio"  value="output to document" />
+      <label for="output to document">output to document</label>
+      <input type="radio" name="outputToDocumentRadio"  value="output to console" />
+      <label for="output to console">output to console</label>
+    </form>
+  </div>
+  <form name="game">
+  </form>
   <script src="app.js"></script>
 </html>

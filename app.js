@@ -25,7 +25,8 @@
  *
  */
 
-const WITH_COLOR = true
+let withColor = true
+let outputToDocument = true
 
 const PIECES = ['a', 'b', 'c']
 
@@ -114,7 +115,7 @@ const OFFSETS = {
 
 const COLORS = {
   p: '#fca3c9',
-  w: '#3172ab',
+  w: '#00c2f0',
   a: '#f2ae00',
   b: '#793b1c',
   c: '#db0000',
@@ -131,18 +132,18 @@ const BOARD = [
 let puzzleIndex = 0;
 let solutionIndex = 0;
 
-const printBoard = (board) => {
+const printBoardToConsole = (board) => {
   let output = ''
   const colorOptions = []
   for (let y = 0; y < 4; y++) {
     for (let x = 0; x < 4; x++) {
       const piece = board[y * 4 + x]
-      if (piece === '' && !WITH_COLOR) {
+      if (piece === '' && !withColor) {
         output += ' '
       } else if (piece === '') {
         output += '%c '
         colorOptions.push(`color:black`)
-      } else if (!WITH_COLOR) {
+      } else if (!withColor) {
         output += piece
       } else {
         output += `%c${piece}`
@@ -153,6 +154,37 @@ const printBoard = (board) => {
   }
   console.log(output, ...colorOptions)
 }
+
+const printBoardToDocument = (board) => {
+  for (let y = 0; y < 4; y++) {
+    const line = document.createElement('div')
+    for (let x = 0; x < 4; x++) {
+      const cell = document.createElement('span')
+      cell.style.width = 10
+      cell.style.display = 'inline-block'
+      const piece = board[y * 4 + x]
+      if (piece !== '') {
+        cell.textContent = piece
+        if (withColor && (piece === 'p' || piece === 'w')) {
+          cell.style.background = COLORS[piece.toLowerCase()]
+        } else if (withColor) {
+          cell.style.color = COLORS[piece.toLowerCase()]
+        }
+      }
+      line.appendChild(cell)
+    }
+    document.game.appendChild(line)
+  }
+}
+
+const logToDocument = text => {
+  const line = document.createElement('h3')
+  line.textContent = text;
+  document.game.appendChild(line)
+}
+
+const printBoard = (board) => outputToDocument ? printBoardToDocument(board) : printBoardToConsole(board)
+const consoleLog = (text) => outputToDocument ? logToDocument(text) : console.log(text)
 
 const canFit = (board, piece, rotation, position, isDayGame) => {
   if (isDayGame && board[position] !== '#') {
@@ -194,10 +226,10 @@ const removePiece = (board, piece, rotation, position, isDayGame) => {
 const solveGameStep = ({ originalBoard, board, pieceIndex, rotation, position, isDayGame }) => {
   if (pieceIndex === PIECES.length) {
     if (solutionIndex === 0) {
-      console.log(`puzzle ${++puzzleIndex}:`);
+      consoleLog(`puzzle ${++puzzleIndex}:`);
       printBoard(originalBoard)
     }
-    console.log(`puzzle ${puzzleIndex} - solution ${++solutionIndex}:`)
+    consoleLog(`puzzle ${puzzleIndex} - solution ${++solutionIndex}:`)
     printBoard(board)
     return
   }
@@ -249,6 +281,12 @@ const game = (next) => {
 }
 
 const dayGame = () => {
+  if (outputToDocument) {
+    document.game.innerHTML = ''
+  } else {
+    console.clear()
+  }
+  consoleLog('day game')
   game(
     (board) => solveGame({
       originalBoard: [...board],
@@ -259,6 +297,12 @@ const dayGame = () => {
 }
 
 const nightGame = () => {
+  if (outputToDocument) {
+    document.game.innerHTML = ''
+  } else {
+    console.clear()
+  }
+  consoleLog('night game')
   game(
     (board, p3) => {
       for (let w = p3 + 1; w < 16; w++) {
@@ -273,4 +317,20 @@ const nightGame = () => {
   )
 }
 
-console.log('run: dayGame() or nightGame()')
+const setUp = () => {
+  const withColorRadios = document.withColorForm.withColorRadio
+  withColorRadios[withColor ? 0 : 1].click()
+  withColorRadios[0].addEventListener('change', () => withColor = true)
+  withColorRadios[1].addEventListener('change', () => withColor = false)
+
+  const outputToDocumentRadios = document.outputToDocumentForm.outputToDocumentRadio
+  outputToDocumentRadios[outputToDocument ? 0 : 1].click()
+  outputToDocumentRadios[0].addEventListener('change', () => outputToDocument = true)
+  outputToDocumentRadios[1].addEventListener('change', () => outputToDocument = false)
+
+  const buttons = document.buttons.children
+  buttons[0].addEventListener('click', () => dayGame())
+  buttons[1].addEventListener('click', () => nightGame())
+}
+
+setUp()
