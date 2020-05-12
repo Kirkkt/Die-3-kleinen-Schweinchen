@@ -31,8 +31,6 @@ let outputToDocument = true
 const PIECES = ['a', 'b', 'c']
 
 const ROTATIONS = {
-  p: 1,
-  w: 1,
   a: 4,
   b: 2,
   c: 4,
@@ -115,7 +113,7 @@ const OFFSETS = {
 
 const COLORS = {
   p: '#fca3c9',
-  w: '#00c2f0',
+  w: '#293235',
   a: '#f2ae00',
   b: '#793b1c',
   c: '#db0000',
@@ -147,7 +145,7 @@ const printBoardToConsole = (board) => {
         output += piece
       } else {
         output += `%c${piece}`
-        colorOptions.push(`${piece === 'p' || piece === 'w' ? 'background' : 'color'}:${COLORS[piece.toLowerCase()]}`)
+        colorOptions.push(`color:${COLORS[piece.toLowerCase()]}`)
       }
     }
     output += '\n'
@@ -165,9 +163,7 @@ const printBoardToDocument = (board) => {
       const piece = board[y * 4 + x]
       if (piece !== '') {
         cell.textContent = piece
-        if (withColor && (piece === 'p' || piece === 'w')) {
-          cell.style.background = COLORS[piece.toLowerCase()]
-        } else if (withColor) {
+        if (withColor) {
           cell.style.color = COLORS[piece.toLowerCase()]
         }
       }
@@ -190,7 +186,7 @@ const canFit = (board, piece, rotation, position, isDayGame) => {
   if (isDayGame && board[position] !== '#') {
     return false
   }
-  if (!isDayGame && board[position] !== 'p') {
+  if (!isDayGame && board[position] !== 'P') {
     return false
   }
   const positionY = Math.floor(position / 4)
@@ -216,7 +212,7 @@ const placePiece = (board, piece, rotation, position) => {
 }
 
 const removePiece = (board, piece, rotation, position, isDayGame) => {
-  board[position] = isDayGame ? '#' : 'p'
+  board[position] = isDayGame ? '#' : 'P'
   const offsets = OFFSETS[piece][rotation]
   for (const {x, y} of offsets) {
     board[position + x + y * 4] = '#'
@@ -260,17 +256,17 @@ const game = (next) => {
     if (board[p1] !== '#') {
       continue;
     }
-    board[p1] = 'p';
+    board[p1] = 'P';
     for (let p2 = p1 + 1; p2 < 16; p2++) {
       if (board[p2] !== '#') {
         continue;
       }
-      board[p2] = 'p';
+      board[p2] = 'P';
       for (let p3 = p2 + 1; p3 < 16; p3++) {
         if (board[p3] !== '#') {
           continue;
         }
-        board[p3] = 'p';
+        board[p3] = 'P';
         next(board, p3)
         board[p3] = '#';
       }
@@ -309,7 +305,7 @@ const nightGame = () => {
         if (board[w] !== '#') {
           continue;
         }
-        board[w] = 'w';
+        board[w] = 'W';
         solveGame({ originalBoard: [...board], board, isDayGame: false })
         board[w] = '#';
       }
