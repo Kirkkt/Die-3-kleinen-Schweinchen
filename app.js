@@ -26,6 +26,9 @@
  */
 
 const WITH_COLOR = true
+
+const PIECES = ['a', 'b', 'c']
+
 const ROTATIONS = {
   p: 1,
   w: 1,
@@ -111,7 +114,7 @@ const OFFSETS = {
 
 const COLORS = {
   p: '#fca3c9',
-  w: '#313d3c',
+  w: '#3172ab',
   a: '#f2ae00',
   b: '#793b1c',
   c: '#db0000',
@@ -185,33 +188,41 @@ const removePiece = (board, piece, rotation, position, isDayGame) => {
   }
 }
 
+const solveGameStep = ({ originalBoard, board, pieceIndex, rotation, position, isDayGame, solutionIndex, puzzleIndex }) => {
+  if (pieceIndex === PIECES.length) {
+    if (solutionIndex === 0) {
+      puzzleIndex++;
+    }
+    console.log(`puzzle ${puzzleIndex}:`);
+    printBoard(originalBoard)
+    console.log(`puzzle ${puzzleIndex} - solution ${++solutionIndex}:`)
+    printBoard(board)
+    return { puzzleIndex, solutionIndex };
+  }
+  const piece = PIECES[pieceIndex]
+  if (canFit(board, piece, rotation, position, isDayGame)) {
+    placePiece(board, piece, rotation, position)
+    const newSolution = solveGameStep({ originalBoard, board, pieceIndex: pieceIndex + 1, rotation: 0, position: 0, isDayGame, solutionIndex, puzzleIndex })
+    puzzleIndex = newSolution.puzzleIndex
+    solutionIndex = newSolution.solutionIndex
+    removePiece(board, piece, rotation, position, isDayGame)
+  }
+  if (rotation === ROTATIONS[piece] - 1 && position === board.length - 1) {
+    return { solutionIndex, puzzleIndex }
+  } else if (position === board.length - 1) {
+    return solveGameStep({ originalBoard, board, pieceIndex, rotation: rotation + 1, position: 0, isDayGame, solutionIndex, puzzleIndex })
+  } else {
+    return solveGameStep({ originalBoard, board, pieceIndex, rotation, position: position + 1, isDayGame, solutionIndex, puzzleIndex })
+  }
+}
+
+const solveGame = ({ originalBoard, board, puzzleIndex, isDayGame }) => {
+  return solveGameStep({ originalBoard, board, pieceIndex: 0, rotation: 0, position: 0, isDayGame, solutionIndex: 0, puzzleIndex }).puzzleIndex;
+}
+
 const dayGame = () => {
-  let solutionIndex = 0
-  const pieces = ['p', 'p', 'p', 'a', 'b', 'c']
-  const solveDayGameStep = (board, pieceIndex, rotation, position) => {
-    if (pieceIndex === pieces.length) {
-      console.log(`${++solutionIndex}:`);
-      printBoard(board)
-      return;
-    }
-    const piece = pieces[pieceIndex]
-    if (canFit(board, piece, rotation, position, true)) {
-      placePiece(board, piece, rotation, position)
-      solveDayGameStep(board, pieceIndex + 1, 0, 0)
-      removePiece(board, piece, rotation, position, true)
-    }
-    if (rotation === ROTATIONS[piece] - 1 && position === board.length - 1) {
-      return
-    } else if (position === board.length - 1) {
-      solveDayGameStep(board, pieceIndex, rotation + 1, 0)
-    } else {
-      solveDayGameStep(board, pieceIndex, rotation, position + 1)
-    }
-  }
-  const solveDayGame = (board, p1, p2, p3) => {
-    solveDayGameStep(board, 3, 0, 0);
-  }
   const board = [...BOARD];
+  let puzzleIndex = 0;
   for (let p1 = 0; p1 < 16; p1++) {
     if (board[p1] !== '#') {
       continue;
@@ -227,7 +238,7 @@ const dayGame = () => {
           continue;
         }
         board[p3] = 'p';
-        solveDayGame(board, p1, p2, p3)
+        puzzleIndex = solveGame({ originalBoard: [...board], board, isDayGame: true, puzzleIndex })
         board[p3] = '#';
       }
       board[p2] = '#'
@@ -237,8 +248,37 @@ const dayGame = () => {
 }
 
 const nightGame = () => {
-  const pieces = ['p', 'p', 'p', 'w', 'a', 'b', 'c']
+  const board = [...BOARD];
+  let puzzleIndex = 0;
+  for (let p1 = 0; p1 < 16; p1++) {
+    if (board[p1] !== '#') {
+      continue;
+    }
+    board[p1] = 'p';
+    for (let p2 = p1 + 1; p2 < 16; p2++) {
+      if (board[p2] !== '#') {
+        continue;
+      }
+      board[p2] = 'p';
+      for (let p3 = p2 + 1; p3 < 16; p3++) {
+        if (board[p3] !== '#') {
+          continue;
+        }
+        board[p3] = 'p';
+        for (let w = p3 + 1; w < 16; w++) {
+          if (board[w] !== '#') {
+            continue;
+          }
+          board[w] = 'w';
+          puzzleIndex = solveGame({ originalBoard: [...board], board, isDayGame: false, puzzleIndex })
+          board[w] = '#';
+        }
+        board[p3] = '#';
+      }
+      board[p2] = '#'
+    }
+    board[p1] = '#'
+  }
 }
 
-
-dayGame()
+console.log('run: dayGame() or nightGame()')
